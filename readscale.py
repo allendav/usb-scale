@@ -16,7 +16,7 @@ import sys
 
 class USBScaleBase(object):
     VENDOR_ID = 0x0922
-    PRODUCT_ID = 0x8004
+    PRODUCT_ID = 0x8003
     DATA_MODE_GRAMS = 2
     DATA_MODE_OUNCES = 11
 
