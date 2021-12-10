@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+
+# Monitor a Dymo Postal Scale and POST the weight to WooCommerce Shipping and Tax
+
+# Based on USB Scale by SparkFun - https://github.com/sparkfun/usb-scale
 # This program can be distributed under the terms of the GNU GPL.
 # See the file COPYING.
 
@@ -11,6 +15,8 @@ try:
 except ImportError:
     pass
 
+import os
+import requests
 import sys
 import time
 
@@ -163,17 +169,40 @@ def set_scale():
 
 ## Main
 
-print("Monitoring USB scale")
+print("Monitoring USB scale. Press Ctrl C to Stop.")
 
+goodToGo = True
 scale = set_scale()
 
+username = os.environ.get("MONITORSCALE_USERNAME")
+password = os.environ.get("MONITORSCALE_PASSWORD")
+
+if not username:
+    goodToGo = False
+    print("Please set MONITORSCALE_USERNAME")
+
+
+if not password:
+    goodToGo = False
+    print("Please set MONITORSCALE_PASSWORD")
+
 try:
-    while True:
+    while goodToGo:
         scale.read()
         pounds, ounces = scale.pounds, scale.ounces
         totalOunces = pounds * 16 + ounces
 
-        print('{weight:'+str(totalOunces)+'}')
+        url = 'https://stagingoctober.marsiswaiting.com/wp-json/wc/v1/connect/scale'
+
+        # r = requests.get(url=url, auth=(username, password))
+
+        payload = { 'weight': totalOunces }
+        print(payload)
+        r = requests.post(url=url, json=payload, auth=(username, password))
+        print(r.status_code)
+
         time.sleep(3)
 except KeyboardInterrupt:
     pass
+
+print("Aborting")
